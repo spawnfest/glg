@@ -82,7 +82,7 @@
     terminate/2
 ]).
 
--define(VERSION,"0.2").
+-define(VERSION,"0.1").
 -define(MSG(Clerk, Time, Msg), term_to_binary({?VERSION, Clerk, node(), Time, gtl_util:now2string(Time), Msg})).
 
 % gtl process lives while its client is alive. After that he lives
@@ -128,12 +128,12 @@ maybe_cast(Msg) ->
 
 % Remember a particular term.
 log(Term) ->
-    error_logger:info_msg("~p log:~p~n", [self(), Term]),
+    %error_logger:info_msg("~p log:~p~n", [self(), Term]),
     cast({record, now(), Term}).
 
 % same as 'log', but executed only if a logger has already been started
 maybe_log(Term) ->
-    error_logger:info_msg("~p maybe_log:~p~n", [self(), Term]),
+    %error_logger:info_msg("~p maybe_log:~p~n", [self(), Term]),
     maybe_cast({record, now(), Term}).
 
 % By default, no transaction logs are ever recorded (logged).
@@ -141,14 +141,14 @@ maybe_log(Term) ->
 % to be recorded when it finishes.
 mark() -> mark(?DEFAULT_MARK).
 mark(Mark) when is_list(Mark) -> % string for marks. used for naming files
-    error_logger:info_msg("~p mark as '~p'~nClerkInfo:~p~n", [self(), Mark, get_clerk_info()]),
+    %error_logger:info_msg("~p mark as '~p'~nClerkInfo:~p~n", [self(), Mark, get_clerk_info()]),
     gtl:log({gtl, marked, Mark}),
     cast({marks, [Mark]}).
 
 % same as 'mark', but executed only if a logger has already been started
 maybe_mark() -> maybe_mark(?DEFAULT_MARK).
 maybe_mark(Mark) when is_list(Mark) ->
-    error_logger:info_msg("~p maybe_mark as '~p'~nClerkInfo:~p~n", [self(), Mark, get_clerk_info()]),
+    %error_logger:info_msg("~p maybe_mark as '~p'~nClerkInfo:~p~n", [self(), Mark, get_clerk_info()]),
     gtl:maybe_log({gtl, marked, Mark}),
     maybe_cast({marks, [Mark]}).
 
@@ -177,11 +177,11 @@ spawn_opt(Fun, Options) ->
     case get_clerk_pid() of
         undefined -> erlang:spawn_opt(Fun, Options);
         _ ->
-            error_logger:info_msg("~p call spawn_opt~n", [self()]),
+            %error_logger:info_msg("~p call spawn_opt~n", [self()]),
             ClerkInfo = get_clerk_info(),
             erlang:spawn_opt(
                 fun() ->
-                        error_logger:info_msg("~p inside spawn_opt~n", [self()]),
+                        %error_logger:info_msg("~p inside spawn_opt~n", [self()]),
                         gtl:set_parent_clerk_info(ClerkInfo),
                         Fun()
                 end,
@@ -223,13 +223,13 @@ cling_to([Pid | Rest]) ->
     case ?MODULE:is_process_alive(Pid) of
         false -> cling_to(Rest);
         _ ->
-            error_logger:info_msg("~p clung to pid:~p~n", [self(), Pid]),
+            %error_logger:info_msg("~p clung to pid:~p~n", [self(), Pid]),
             put('$gtl_parent_clerk', Pid),
             ok
     end.
 
 % When a process publishes an amq-message, it might immediately die
-%  (before an amq-subscriber handle the message). Blog clerk for such a
+%  (before an amq-subscriber handle the message). Clerk for such a
 %  process should wait until gtl clerk for the subscriber appears.
 % For the performance reason this delay for the local has been decreased
 %  as we don't have large amount of data in our tests
@@ -278,7 +278,7 @@ start_new_clerk({ok, _V}) ->
     Args = {get_parent_clerk_pid(), self()},
     case gen_server:start(?MODULE, Args, [{timeout, 1000}]) of
         {ok, ClerkPid} ->
-            error_logger:info_msg("get_clerk_info:~p~nstart_new_clerk ~p for client ~p~n", [get_clerk_info(), ClerkPid, self()]),
+            %error_logger:info_msg("get_clerk_info:~p~nstart_new_clerk ~p for client ~p~n", [get_clerk_info(), ClerkPid, self()]),
             put('$gtl_clerk', ClerkPid),
             ClerkPid;
         _E ->
@@ -337,21 +337,21 @@ alloc_memory(Size) ->
         true -> Size;
         _ -> ?MEMORY_CHUNK
     end,
-    error_logger:info_msg("~p alloc_memory(~p)~n", [self(), Chunk]),
+    %error_logger:info_msg("~p alloc_memory(~p)~n", [self(), Chunk]),
     quota_server:alloc(gtl_memory, Chunk).
 
 alloc_proc() ->
-    error_logger:info_msg("~p alloc_proc(~p)~n", [self(), 1]),
+    %error_logger:info_msg("~p alloc_proc(~p)~n", [self(), 1]),
     quota_server:alloc(gtl_processes, 1).
 
 free_memory(0) -> ok;
 free_memory(Size) ->
-    error_logger:info_msg("~p free_memory(~p)~n", [self(), Size]),
+    %error_logger:info_msg("~p free_memory(~p)~n", [self(), Size]),
     quota_server:free(gtl_memory, Size).
 
 free_proc(0) -> ok;
 free_proc(Size) ->
-    error_logger:info_msg("~p free_proc(~p)~n", [self(), Size]),
+    %error_logger:info_msg("~p free_proc(~p)~n", [self(), Size]),
     quota_server:free(gtl_processes, Size).
 
 handle_record({record, R}, Size, MFree, S) when MFree < Size ->
@@ -395,7 +395,7 @@ handle_cast({records, Msgs}, State) ->
 handle_cast({marks, []}, State) ->
     {noreply, State, get_value(ttl,State)};
 handle_cast({marks, Marks}, State) ->
-    error_logger:info_msg("handle_cast marks ~p~n", [Marks]),
+    %error_logger:info_msg("handle_cast marks ~p~n", [Marks]),
 
     % hack. mark parent clerk instantly.
     % correct behavior: we should pass marks from child to parent
@@ -419,7 +419,7 @@ handle_cast({marks, Marks}, State) ->
     {noreply, NS, get_value(ttl,NS)};
 
 handle_cast({register_child, Pid}, S) ->
-    error_logger:info_msg("~p register_child ~p~n", [self(), Pid]),
+    %error_logger:info_msg("~p register_child ~p~n", [self(), Pid]),
     Childs = get_value(childs, S),
     [Log, Clerk] = get_values([log, gtl_clerk], S),
     LastMsg = ?MSG(Clerk, now(), {gtl, register_child, Pid}),
@@ -433,12 +433,12 @@ handle_cast({register_child, Pid}, S) ->
     {noreply, NS, get_value(ttl,NS)};
 
 handle_cast({ttl, T}, S) ->
-    error_logger:info_msg("~p updated ttl to ~p~n", [self(), T]),
+    %error_logger:info_msg("~p updated ttl to ~p~n", [self(), T]),
     NS = repl_keys([{ttl, T}], S),
     {noreply, NS, get_value(ttl,NS)};
 
 handle_cast({deregister_client, Pid}, S) ->
-    error_logger:info_msg("~p deregister_client ~p~n", [self(), Pid]),
+    %error_logger:info_msg("~p deregister_client ~p~n", [self(), Pid]),
     NS = handle_down_client(Pid, S),
     {noreply, NS, get_value(ttl,NS)};
 
@@ -468,10 +468,10 @@ handle_info(async_init, S) ->
                 [] -> S;
                 Marks when is_list(Marks) ->
 
-                    error_logger:info_msg("~p: async_init set marks to ~p~n", [self(), Marks]),
+                    %error_logger:info_msg("~p: async_init set marks to ~p~n", [self(), Marks]),
                     Ts = sets:from_list(Marks),
                     Marks_new = sets:union(get_value(marks, S), Ts),
-                    error_logger:info_msg("handle_info async init marks:~p~n" ,[ Marks_new]),
+                    %error_logger:info_msg("handle_info async init marks:~p~n" ,[ Marks_new]),
                     repl_keys([{marked, true}, {marks,Marks_new}], S);
                 V ->
                     error_logger:warning_msg("Can't get parent marks:~p~n", [V]),
@@ -495,7 +495,7 @@ handle_info(forced_timeout, S) ->
 
 % we monitor client and child clerks, one of them is died
 handle_info({'DOWN', MRef, process, Pid, _Info} = _Msg, S) ->
-    error_logger:info_msg("~p: Info 'DOWN' received:~p~n", [self(), _Msg]),
+    %error_logger:info_msg("~p: Info 'DOWN' received:~p~n", [self(), _Msg]),
     Client_mref = get_value(client_mref, S),
     NS = case MRef == Client_mref of
         true -> handle_down_client(Pid, S);
@@ -510,7 +510,7 @@ handle_info(Info,S) ->
 handle_down_child(MRef, Pid, S) ->
     % at this point we've already received all info from child clerk
     % so we should either die (if no childs left) or wait for other childs
-    error_logger:info_msg("~p: child is down~n", [self()]),
+    %error_logger:info_msg("~p: child is down~n", [self()]),
     Childs = get_value(childs, S),
     [Log, Clerk] = get_values([log, gtl_clerk], S),
     LastMsg = ?MSG(Clerk, now(), {gtl, handle_down_child, Pid}),
@@ -522,7 +522,7 @@ handle_down_child(MRef, Pid, S) ->
     NS.
 
 handle_down_client(Pid, S) ->
-    error_logger:info_msg("~p: client is down~n", [self()]),
+    %error_logger:info_msg("~p: client is down~n", [self()]),
     [Log, Clerk] = get_values([log, gtl_clerk], S),
     LastMsg = ?MSG(Clerk, now(), {gtl, handle_down_client, Pid}),
     NS = repl_keys([
@@ -532,7 +532,7 @@ handle_down_client(Pid, S) ->
     NS.
 
 handle_stop_clerk(S) ->
-    error_logger:info_msg("stopping clerk ~p~n", [self()]),
+    %error_logger:info_msg("stopping clerk ~p~n", [self()]),
     [Parent, Log, Marks_raw, Timer] = get_values(
         [gtl_parent_clerk, log, marks, timer],
         S),
@@ -548,10 +548,10 @@ handle_stop_clerk(S) ->
 
     case ?MODULE:is_process_alive(Parent) of
         true ->
-            error_logger:info_msg("~p: sending clerk's log to parent ~p~n", [self(), Parent]),
+            %error_logger:info_msg("~p: sending clerk's log to parent ~p~n", [self(), Parent]),
             gen_server:cast(Parent, {records, NewLog}),
             Marks = sets:to_list(Marks_raw),
-            error_logger:info_msg("~p: sending clerk's marks to parent ~p~n", [self(), Parent]),
+            %error_logger:info_msg("~p: sending clerk's marks to parent ~p~n", [self(), Parent]),
             gen_server:cast(Parent, {marks, Marks});
         _ ->
             % Parent is dead or undefined
@@ -598,7 +598,7 @@ flush_log(true, S) ->
     Marks = sets:to_list(Marks_raw),
 
     LogNames = lists:map(fun form_logname/1, Marks),
-    error_logger:info_msg("flush_log: ~p~n", [LogNames]),
+    %error_logger:info_msg("flush_log: ~p~n", [LogNames]),
     save_to_disk(LogNames, ?VERSION, lists:reverse(Log)).
 
 
