@@ -8,5 +8,6 @@
                   stdlib
                  ]},
   {mod, { glg_app, []}},
-  {env, []}
+  {env, [
+    ]}
  ]}.
