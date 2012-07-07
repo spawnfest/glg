@@ -38,8 +38,9 @@
 name(Name) when is_atom(Name) ->
     list_to_atom(atom_to_list(?MODULE) ++ "." ++ atom_to_list(Name)).
 
-start_link(Name) ->
-    Limit = 100, %FIXME
+start_link(Name) when is_atom(Name) ->
+    Key = list_to_atom("quota_" ++ atom_to_list(Name)),
+    Limit = application:get_env(gtl, Key),
     start_link(Name, Limit).
 start_link(Name, Limit) ->
     gen_server:start_link({local, name(Name)}, ?MODULE, Limit, []).
