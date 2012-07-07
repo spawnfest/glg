@@ -1,0 +1,4 @@
+- save to disk on one node
+- new gen_server behaviour with gtl support
+- proper tests
+- eunit tests
