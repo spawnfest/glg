@@ -13,8 +13,6 @@
 %% EXAMPLE:
 %%
 %%
-%% 68> c(gtl).
-%% {ok,gtl}
 %% 69> gtl:log(start_logging).
 %% ok
 %% 70> gtl:spawn_opt(fun() -> gtl:log("some subsystem's log") end, []).
@@ -22,11 +20,7 @@
 %% 71> gtl:log(stop_logging).
 %% ok.
 %% 72> gtl:get_log().
-%% [{#Ref<0.0.0.1030>,{1291,230124,786345},{'DOWN',normal}},
-%%  {#Ref<0.0.0.1030>,{1291,230123,594336},stop_logging},
-%%  {#Ref<0.0.0.1035>,{1291,230114,755841},{'DOWN',noproc}},
-%%  {#Ref<0.0.0.1035>,{1291,230114,755611},"some subsystem's log"},
-%%  {#Ref<0.0.0.1030>,{1291,230107,557996},start_logging}]
+%% TODO: add output
 
 -module(gtl).
 -behavior(gen_server).

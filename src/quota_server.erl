@@ -1,3 +1,4 @@
+%%% vim: set ts=4 sts=4 sw=4 expandtab:
 -module(quota_server).
 -behavior(gen_server).
 -export([

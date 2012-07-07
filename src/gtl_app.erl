@@ -1,4 +1,5 @@
--module(glg_app).
+%%% vim: set ts=4 sts=4 sw=4 expandtab:
+-module(gtl_app).
 
 -behaviour(application).
 
@@ -10,7 +11,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    glg_sup:start_link().
+    gtl_sup:start_link().
 
 stop(_State) ->
     ok.
