@@ -83,7 +83,7 @@
 ]).
 
 -define(VERSION,"0.2").
--define(MSG(Clerk, Time, Msg), term_to_binary({?VERSION, Clerk, node(), Time, now2string(Time), Msg})).
+-define(MSG(Clerk, Time, Msg), term_to_binary({?VERSION, Clerk, node(), Time, gtl_util:now2string(Time), Msg})).
 
 % gtl process lives while its client is alive. After that he lives
 %     ?PROCESS_TTL milliseconds more and dies
@@ -245,15 +245,6 @@ set_ttl(T) when is_integer(T) -> maybe_cast({ttl, T}).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INTERNAL FUNCTIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-mk2(A) when A >= 100 -> integer_to_list(A rem 100);
-mk2(A) when A >= 10  -> integer_to_list(A);
-mk2(A) -> "0" ++ integer_to_list(A).
-
-now2string(Now) ->
-    {{Y,M,D},{H,Min,S}} = calendar:now_to_local_time(Now),
-    integer_to_list(Y) ++ "/" ++ mk2(M) ++ "/" ++ mk2(D) ++
-        " " ++ mk2(H) ++ ":" ++ mk2(Min) ++ ":" ++ mk2(S).
 
 get_proplist_values(Keys, PL, Default) ->
     [proplists:get_value(K, PL, Default) || K <- Keys].
@@ -611,6 +602,6 @@ flush_log(true, S) ->
     save_to_disk(LogNames, ?VERSION, lists:reverse(Log)).
 
 
-save_to_disk(_LogNames, _Version, _LogData) ->
+save_to_disk(LogNames, Version, LogData) ->
     %FIXME:
-    undefined.
+    gtl_saver:save({LogNames, Version, LogData}).

@@ -1,4 +1,5 @@
 - save to disk on one node
 - new gen_server behaviour with gtl support
+- use LICENCE
 - proper tests
 - eunit tests
