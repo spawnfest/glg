@@ -1,0 +1,12 @@
+{application, glg,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { glg_app, []}},
+  {env, []}
+ ]}.
