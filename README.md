@@ -7,15 +7,15 @@ If you have a complex data and control flow, and want to see what's happening
 in your system  when some API function has been called, how does your system 
 process this call - GTL is the best way to do it. 
 With the help of GTL you can monitor not only current process and its data
-but also see the whole picture of you system:
+but also see the whole picture:
 - what node does the function work on and what is the pid of the process
 - where the current function was called from, with what arguments,
   what was the pid and the node of the caller
     (not only for the nearest caller, but for the any depth caller)
-- what is the timestamp of each logging print. As a result if you have a call
-  to logger in each logical phase, you could calculate the amount of time 
-  for each phase to run
-- GTL wouldn't harm your project as it contains resourse management system.
+- what is the timestamp of each logging print. As a result if you 
+  print log in each logical phase, you could calculate the amount of time 
+  each phase has spent.
+- GTL wouldn't harm your cluster as it contains resourse management system.
   It wouldn't use more processes or memory then you allowed it to use 
     (see quota_server.erl)
 - not saying a word about usual logging features
@@ -26,7 +26,8 @@ How does it works
 
 For each process you want to monitor (a worker), 
 a new process (a logger) is created.  It gathers all the logs for the worker
-until it dies. If it spawns a new worker, new logger is created for it.
+until it dies. If it spawns a new worker (or somehow create new process), 
+new logger is created for it.
 When the child worker is died, its logger sends all the logs he's gathered
 to the parent's logger. 
 Info about the logger could be passed by:
