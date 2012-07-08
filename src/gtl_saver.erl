@@ -42,13 +42,21 @@ log_it(LogName, Header, Logs) ->
             error_logger:info_msg("save log to ~p dir:~p~n", [LogName, element(2,file:get_cwd())]),
             io:format(IoDevice, "[~s; ~14.3f] " ++ Header ++ "~n[~n",
                 [lists:flatten(gtl_util:time_to_string(erlang:universaltime(), "GMT")), float(gtl_util:now2micro(now()) / 1000000)]),
-            [ io:format(IoDevice, " ~200p~n", [binary_to_term(L)]) 
-                || L <- Logs, is_binary(L)],
+            print_logs(IoDevice, Logs),
             io:format(IoDevice, "]~n~n", []),
             file:close(IoDevice);
         {error, Reason} ->
             error_logger:error_msg("~p: can't open ~p: ~p", [?MODULE, LogName, Reason])
     end.
+
+print_logs(_, []) -> nop;
+print_logs(IoDevice, [L | Rest]) ->
+    MaybeComma = case Rest of
+        [] -> "";
+        _ -> ","
+    end,
+    io:format(IoDevice, " ~200p" ++ MaybeComma ++ "~n", [binary_to_term(L)]),
+    print_logs(IoDevice, Rest).
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 terminate(_Reason, _State) -> ok.
