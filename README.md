@@ -52,16 +52,16 @@ graphical view with the gtl-analyzer tool. The result file could look like this:
 
 ![Graphic representation of GTL logs](https://github.com/Spawnfest2012/glg/raw/master/graphics/svg-example.png "Graphic representation of GTL logs")
 
+
 (NB: it's old version of graphic representation, link to the new one could 
 found below)
 
-Resume
-------
+Check it by yourself
+--------------------
 
 GTL does a great stuff, 
 
-
-You could check it in console:
+You could check it right now in console:
 <pre>
 bash $ make
 bash $ ./start.sh
@@ -89,4 +89,4 @@ With the applied haskell-tool you could transfer it to the svg:
 <pre>
 bash $ ./gtl-analyzer --svg -i0 ./gtl.bbb.log > out.html
 </pre>
-I've saved it as a graphics/out.html file
+I've saved it as a graphics/out.html file, download it and see the result.
