@@ -1,7 +1,5 @@
-- function instead of erlang macros
-- haskell analyzer
-- save to disk on one node
-- new gen_server behaviour with gtl support
+- save to disk on one node - find more proper way?
+- new gen_server behaviour with gtl support ?
 - use LICENCE
 - proper tests
 - eunit tests
