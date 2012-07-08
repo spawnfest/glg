@@ -15,6 +15,9 @@ but also see the whole picture of you system:
 - what is the timestamp of each logging print. As a result if you have a call
   to logger in each logical phase, you could calculate the amount of time 
   for each phase to run
+- GTL wouldn't harm your project as it contains resourse management system.
+  It wouldn't use more processes or memory then you allowed it to use 
+    (see quota_server.erl)
 - not saying a word about usual logging features
 
 
@@ -53,8 +56,6 @@ Resume
 ------
 
 GTL does a great stuff, 
-
-
 
 
 You could check it in console:
