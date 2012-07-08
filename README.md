@@ -64,8 +64,8 @@ graphical view with the gtl-analyzer tool. The result file could look like this:
 (NB: it's old version of graphic representation, link to the new one could 
 found below)
 
-Check it by yourself
---------------------
+Try it
+------
 
 GTL does a great stuff, 
 
