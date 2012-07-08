@@ -31,7 +31,7 @@ When the child worker is died, its logger sends all the logs he's gathered
 to the parent's logger. So as a result you would see smth like the following
 picture:
 
-![Workers and loggers](https://github.com/Spawnfest2012/glg/images/workers-and-loggers.png "Workers and loggers")
+![Workers and loggers](https://github.com/Spawnfest2012/glg/raw/master/graphics/workers-and-loggers.png "Workers and loggers")
 
 Boxes here are the workers, and the circles are the loggers.
 
@@ -50,7 +50,9 @@ all the workers are dead, the log collected will be saved to some file.
 Besides just reading the file as a plain text, it might be processed to the 
 graphical view with the gtl-analyzer tool. The result file could look like this:
 
-TODO: insert picture
+![Graphic representation of GTL logs](https://github.com/Spawnfest2012/glg/raw/master/graphics/svg-example.png "Graphic representation of GTL logs")
+(NB: it's old version of graphic representation, link to the new one could 
+found below)
 
 Resume
 ------
