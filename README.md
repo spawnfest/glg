@@ -31,7 +31,7 @@ When the child worker is died, its logger sends all the logs he's gathered
 to the parent's logger. So as a result you would see smth like the following
 picture:
 
-TODO: insert picture
+![Workers and loggers](/images/workers-and-loggers.png "Workers and loggers")
 
 Boxes here are the workers, and the circles are the loggers.
 
