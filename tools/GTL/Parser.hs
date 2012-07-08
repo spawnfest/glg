@@ -19,7 +19,7 @@ module GTL.Parser (
 
 
 import Data.Attoparsec hiding (take, takeWhile, takeTill, satisfy)
-import Data.Attoparsec.Char8 (char, notChar, space, endOfInput, isEndOfLine, endOfLine, anyChar, digit, isDigit, isAlpha_ascii, satisfy, takeTill)
+import Data.Attoparsec.Char8 (char, notChar, space, endOfInput, isSpace, endOfLine, anyChar, digit, isDigit, isAlpha_ascii, satisfy, takeTill, peekChar)
 import qualified Data.ByteString.Char8 as B
 
 import Data.List (partition, isInfixOf, intercalate, foldl')
@@ -32,6 +32,18 @@ import Data.Char (isAsciiLower)
 -- for debug
 import Debug.Trace
 
+
+runParser :: (BRecord -> Bool)
+          -> (MyTree -> Int -> IO ())
+          -> B.ByteString
+          -> IO ()
+runParser filterF proc lines = runParser' (parse parser lines) 0
+  where
+    parser = pLog filterF
+    runParser' (Fail _ _ m) _     = return () -- putStrLn ("End of input " ++ m)
+    runParser' (Done t r) i       = do proc r i
+                                       runParser' (parse parser t) (i+1)
+    runParser' res@(Partial _) i  = runParser' (feed res B.empty) (i+1)
 
 type ErlTime = Integer
 
@@ -90,13 +102,14 @@ parsers = [ pTuple,
             pString ]
 
 pObject :: Parser BObject
---pObject = trace "pObject:" $ spaces *> choice parsers
+pObject = spaces *> choice parsers
+{-
 pObject = do
   spaces
-  s <- get
-  trace ("s:" ++ show(s)) $ return ()
   o <- choice parsers
-  trace ("o:" ++ show(o)) $ return o
+  trace ("o:" ++ show(o)) $
+  return o
+  -}
 
 pAtom :: Parser BObject
 pAtom = liftM BAtom (nonApostrophedAtom <|> apostrophedAtom <?> "atom")
@@ -159,7 +172,7 @@ pBinary =  BBinary <$> (quoted <|> unquoted :: Parser String)
 pSeries :: (Char, Char) -> ([BObject] -> BObject) -> Parser BObject
 pSeries (co, cc) constr = constr <$> series
   where
-    series = char co *> (trace ("co:" ++ [co]) objs) <* (trace ("cc:" ++ [cc]) $ char cc)
+    series = char co *> objs <* spaces <* char cc
     objs   = pObject `sepBy` comma
     comma  = spaces >> char ',' >> spaces
 
@@ -167,19 +180,19 @@ pTuple, pArray :: Parser BObject
 pTuple = pSeries ('{', '}') BTuple
 pArray = pSeries ('[', ']') BArray
 
-spaces = many space
+spaces = many $ satisfy $ \c ->
+  isSpace c || c == '\n' || c == '\r'
 
 line :: Parser String
 line = B.unpack <$> takeTill (== '\n') <* endOfLine
 
-gtlHeader, oldHeader :: Parser String
+gtlHeader :: Parser String
 gtlHeader = try (string $ B.pack "gtl version=") >> line
-oldHeader = line >> line >> line
 
 skipGTLHeader :: Parser String
 skipGTLHeader = do
   char '[' >> takeTill (== ']') >> anyChar >> spaces
-  gtlHeader <|> oldHeader
+  gtlHeader
   return "aaa"
 
 pLog :: (BRecord -> Bool) -> Parser MyTree
@@ -189,7 +202,7 @@ pLog filterF = do
 
   (BArray els) <- pObject
   let records = map objToRec els
-  let filtered = trace "hello" $ filter filterF records
+  let filtered = filter filterF records
   return $ recordsToTree filtered
 
 data GTL = GTL [BRecord]
@@ -226,10 +239,8 @@ instance Searchable GTL where
   search str (GTL rs) = any (search str) rs
 
 objToRec :: BObject -> BRecord
-objToRec (BTuple (BString "0.1":ar))   | length ar == 5 = obj01ToRec ar
-
-objToRec a = error $
-  "ERROR: can't parse: unknown version of BObject: " ++ show a
+objToRec (BTuple (BString "0.1":ar))  = obj01ToRec ar
+objToRec a = error $ "ERROR: unknown version of BObject: " ++ show a
 
 obj01ToRec :: [BObject] -> BRecord
 obj01ToRec ar = BRecord { rPid       = pidStr,
