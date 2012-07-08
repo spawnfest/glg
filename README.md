@@ -51,6 +51,7 @@ Besides just reading the file as a plain text, it might be processed to the
 graphical view with the gtl-analyzer tool. The result file could look like this:
 
 ![Graphic representation of GTL logs](https://github.com/Spawnfest2012/glg/raw/master/graphics/svg-example.png "Graphic representation of GTL logs")
+
 (NB: it's old version of graphic representation, link to the new one could 
 found below)
 
@@ -88,5 +89,4 @@ With the applied haskell-tool you could transfer it to the svg:
 <pre>
 bash $ ./gtl-analyzer --svg -i0 ./gtl.bbb.log > out.html
 </pre>
-You can see it here
-TODO: insert link
+I've saved it as a graphics/out.html file
