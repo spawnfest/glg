@@ -28,7 +28,14 @@ For each process you want to monitor (a worker),
 a new process (a logger) is created.  It gathers all the logs for the worker
 until it dies. If it spawns a new worker, new logger is created for it.
 When the child worker is died, its logger sends all the logs he's gathered
-to the parent's logger. So as a result you would see smth like the following
+to the parent's logger. 
+Info about the logger could be passed by:
+- spawn (<pre>gtl:spawn/1</pre>)
+- rpc:call (<pre>gtl:rpc/4</pre>)
+- AMQ messages (<pre>gtl:get_clerk_info/0 plus gtl:set_clerk_info/1</pre>)
+- gen server calls (-//-)
+
+So as a result you would see smth like the following
 picture:
 
 ![Workers and loggers](https://github.com/Spawnfest2012/glg/raw/master/graphics/workers-and-loggers.png "Workers and loggers")

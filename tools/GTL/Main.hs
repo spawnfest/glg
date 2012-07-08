@@ -78,11 +78,11 @@ examples = "FORMAT:\n"
   ++ "\n"
   ++ "EXAMPLES:\n"
   ++ "   # print plain representation with start phase as_admitter : admit_events_to_storage \n"
-  ++ "  " ++ name ++ " --start=as_admitter:admit_events_to_storage --filterAfter=gtl:handle_down_client --plain /js-kit/logs/gtl.perftest.log\n"
+  ++ "  " ++ name ++ " --start=as_admitter:admit_events_to_storage --filterAfter=gtl:handle_down_client --plain gtl.perftest.log\n"
   ++ "   # plain representation for debugging as_pipeline\n"
-  ++ "  " ++ name ++ " --plain /js-kit/logs/gtl.perftest.log --filterBefore=as_pipeline:propagate_feed --filterAfter=as_pipeline\n"
+  ++ "  " ++ name ++ " --plain gtl.perftest.log --filterBefore=as_pipeline:propagate_feed --filterAfter=as_pipeline\n"
   ++ "   # svg-image representation\n"
-  ++ "  " ++ name ++ " --svg /js-kit/logs/gtl.perftest.log > output.svg\n"
+  ++ "  " ++ name ++ " --svg gtl.perftest.log > output.svg\n"
 
 showHelp :: a -> IO b
 showHelp _ = do

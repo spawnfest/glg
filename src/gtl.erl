@@ -1,4 +1,7 @@
 %%% vim: set ts=4 sts=4 sw=4 expandtab:
+%% @doc
+%% The main module that contains all the API to the GTL
+%% @end
 %%
 %% binary bloated Global Transactional Logger.
 %%
@@ -96,25 +99,32 @@
 -define(DEFAULT_MARK, "_").
 -define(MEMORY_CHUNK, 1000). % in bytes
 
+% @private
+% @doc Current limits of the system
+% TODO: move to app-config
 limits() ->
     [
         {gtl_memory, 50000000},
         {gtl_processes, 300}
     ].
 
+% @doc Get the current status of quota server
 quota_status() ->
     [ {K, Status} ||
         {K,_N} <- limits(),
         {ok, Status} <- [quota_server:status(K)]
     ].
 
+% @private 
+% @doc create logger and call gen_server:cast
 cast(Msg) ->
     case get_or_create_clerk_pid() of
         undefined -> undefined;
         Pid -> gen_server:cast(Pid, Msg)
     end.
 
-% cast only if clerk or parent_clerk exists
+% @private 
+% @doc cast only if clerk or parent_clerk exists (see cast/1)
 maybe_cast(Msg) ->
     Pid = case {get_clerk_pid(), get_parent_clerk_pid()} of
         {undefined, undefined} -> undefined;
@@ -126,16 +136,17 @@ maybe_cast(Msg) ->
         Pid -> gen_server:cast(Pid, Msg)
     end.
 
-% Remember a particular term.
+%% @doc Remember a particular term.
 log(Term) ->
     %error_logger:info_msg("~p log:~p~n", [self(), Term]),
     cast({record, now(), Term}).
 
-% same as 'log', but executed only if a logger has already been started
+% @doc same as 'log', but executed only if a logger has already been started
 maybe_log(Term) ->
     %error_logger:info_msg("~p maybe_log:~p~n", [self(), Term]),
     maybe_cast({record, now(), Term}).
 
+% @doc
 % By default, no transaction logs are ever recorded (logged).
 % The mark() function allows to mark a transaction as "interesting enough"
 % to be recorded when it finishes.
@@ -145,13 +156,14 @@ mark(Mark) when is_list(Mark) -> % string for marks. used for naming files
     gtl:log({gtl, marked, Mark}),
     cast({marks, [Mark]}).
 
-% same as 'mark', but executed only if a logger has already been started
+% @doc same as 'mark', but executed only if a logger has already been started
 maybe_mark() -> maybe_mark(?DEFAULT_MARK).
 maybe_mark(Mark) when is_list(Mark) ->
     %error_logger:info_msg("~p maybe_mark as '~p'~nClerkInfo:~p~n", [self(), Mark, get_clerk_info()]),
     gtl:maybe_log({gtl, marked, Mark}),
     maybe_cast({marks, [Mark]}).
 
+% @doc mark transaction if a the call to function F takes too much time
 mark_if_slow(Timeout, F) -> mark_if_slow(Timeout, F, ?DEFAULT_MARK).
 mark_if_slow(Timeout, F, Mark) ->
     Start = now(),
@@ -171,8 +183,10 @@ mark_if_slow(Timeout, F, Mark) ->
             Start, '->', Stop, '=', Elapsed, Mark1}),
     Result.
 
+% @doc erlang:spawn replacer with GTL support
 spawn(Fun) -> ?MODULE:spawn_opt(Fun, []).
 
+% @doc erlang:spawn_opt replacer with GTL support
 spawn_opt(Fun, Options) ->
     case get_clerk_pid() of
         undefined -> erlang:spawn_opt(Fun, Options);
@@ -188,14 +202,18 @@ spawn_opt(Fun, Options) ->
                 Options)
     end.
 
+% @doc remove from worker any info about GTL.
+% this is useful for gen_servers and other long-live processes
 deregister_client() ->
     cast({deregister_client, self()}).
 
+% @doc status about current logger (if any)
 status() ->
     case get_clerk_pid() of
         undefined -> undefined;
         Pid -> gen_server:call(Pid, status)
     end.
+% @doc get log from current logger (if any)
 get_log() ->
     case get_clerk_pid() of
         undefined -> undefined;
@@ -204,12 +222,15 @@ get_log() ->
 
 clerk_keys() -> [ '$gtl_clerk',  '$gtl_parent_clerk'].
 
+% @doc get info from about current logger
 get_clerk_info() ->
     [ {K, get(K)} || K <- clerk_keys() ].
 
+% @doc erase info from worker about current logger
 erase_clerk_info() ->
     [ {K, erase(K)} || K <- clerk_keys() ].
 
+% @doc save info into the worker about logger
 set_clerk_info(Info) ->
     [ put(K,V) || {K, V} <- Info ],
     ok.
@@ -228,6 +249,7 @@ cling_to([Pid | Rest]) ->
             ok
     end.
 
+% @doc
 % When a process publishes an amq-message, it might immediately die
 %  (before an amq-subscriber handle the message). Clerk for such a
 %  process should wait until gtl clerk for the subscriber appears.
@@ -238,6 +260,7 @@ bump_ttl() ->
     set_ttl(TTL).
 
 
+% @doc
 % ask a gtl process to stay alive for a longer (shorter) period of time
 set_ttl(T) when is_integer(T) andalso T < 0 -> ok;
 set_ttl(T) when is_integer(T) -> maybe_cast({ttl, T}).
