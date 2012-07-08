@@ -1,5 +1,4 @@
 - save to disk on one node - find more proper way?
-- new gen_server behaviour with gtl support ?
 - use LICENCE
 - proper tests
 - eunit tests
